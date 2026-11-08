@@ -18,3 +18,9 @@ Review screenshots on the box:
 Detailed local QA results: `/workspace/swo/qa-complete-results.json`. Screenshots and test tooling are not deployment files.
 
 Deferred: final SEO/sitemap and production promotion. The feature branch is review-only until Mark merges.
+
+## Iterative update: home prefetch and contact mail (November 8, 2026)
+
+- Home page loads a small script that waits for the `load` event, then fetches the Portfolio page and warms the browser cache for each gallery JPEG so those images are less likely to stream in on the next visit to Portfolio.
+- Contact no longer includes a raw `mailto:hello@smallwiseone.com` in the HTML. JavaScript assembles the visible `hello@smallwiseone.com` address and sets the mailto to `hello+web` plus the current year (2026 now). Without JavaScript the page shows `hello [at] smallwiseone [dot] com` and is not a harvestable mailto.
+- No production, CNAME, or mailbox-local-part change. Staging only.
