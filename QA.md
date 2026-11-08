@@ -24,3 +24,7 @@ Deferred: final SEO/sitemap and production promotion. The feature branch is revi
 - Home page loads a small script that waits for the `load` event, then fetches the Portfolio page and warms the browser cache for each gallery JPEG so those images are less likely to stream in on the next visit to Portfolio.
 - Contact no longer includes a raw `mailto:hello@smallwiseone.com` in the HTML. JavaScript assembles the visible `hello@smallwiseone.com` address and sets the mailto to `hello+web` plus the current year (2026 now). Without JavaScript the page shows `hello [at] smallwiseone [dot] com` and is not a harvestable mailto.
 - No production, CNAME, or mailbox-local-part change. Staging only.
+
+## Iterative update: Microsoft Clarity (November 8, 2026)
+
+- Exact Clarity snippet supplied by Mark (project id `p1ucc2kgen`) is in the `<head>` of every HTML page (Home, Portfolio, Collaboration, About, Contact). Staging only; no production, CNAME, or project-id change.
