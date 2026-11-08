@@ -7,13 +7,15 @@ This is the staging/demo site, not production. The production site and its setti
 - Publishing source: `main`, repository root. The first-slice feature branch remains unpublished until Mark reviews and merges its PR.
 - Every page carries the required demo banner and uses a pure white background, including Contact.
 
-## First slice
+## Reviewable staging site
 
-Plain HTML and CSS: Home, About, Contact, and minimal Portfolio and Collaboration placeholders. Contact is mailto-only. No build step, JavaScript, analytics, forms, newsletter, or third-party font requests.
+Static HTML and CSS: Home, Portfolio, Collaboration, About, and Contact. Portfolio includes 71 artworks in eight collections and a tiny local vanilla-JavaScript lightbox with keyboard navigation, native modal focus containment, and focus restoration. Contact is mailto-only. No build step, analytics, forms, newsletter, or third-party font requests.
 
 Home uses three starter featured artworks. About uses both the artist portrait and circular supporting artwork. Contact uses starter featured art rather than reproducing the additional mockup illustrations that are not in the provided asset subset.
 
-Deferred: the full eight-collection portfolio, lightbox, Collaboration content, final SEO/sitemap, production promotion and rollback workflow. Demo pages are marked noindex.
+Portfolio category order and Collaboration service order follow the supplied mockups. Collaboration uses the matching Brown Bunny, London Bus, London Fashion Week, Regents Park (Queen Mary’s Rose Garden), Floral Phone Box, and Dala Horse assets; no artwork fallback was needed. The 71 portfolio JPGs are optimized to a 1600px long side, quality 82. Raw downloads are not included.
+
+Deferred: final SEO/sitemap, production promotion and rollback workflow. Demo pages are marked noindex.
 
 ## Local preview at the correct base path
 
