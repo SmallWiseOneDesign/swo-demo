@@ -3,8 +3,12 @@
   --portfolio-sticky-header: 8.5rem;
 }
 
-body.portfolio {
-  overflow-x: hidden;
+/* overflow-x: hidden on body computed overflow-y to auto and made body a
+   scroll container, which prevents the nested category submenu from sticking
+   in some browsers. overflow-x: clip on the root avoids a 100vw scrollbar
+   without creating a scroll container. */
+html:has(body.portfolio) {
+  overflow-x: clip;
 }
 
 body.portfolio .skip-link {
@@ -66,9 +70,17 @@ body.portfolio .collection {
 }
 
 @media (min-width: 701px) {
+  /* Stretch the grid row to the collections column height so the submenu's
+     containing block is taller than the menu itself. align-self: start keeps
+     the sticky item only as tall as its links, which is what lets it stick. */
+  body.portfolio .portfolio-layout {
+    align-items: stretch;
+  }
+
   body.portfolio .category-nav {
     position: sticky;
     top: var(--portfolio-sticky-header);
+    align-self: start;
     z-index: 30;
     background: #fff;
     padding-top: 10px;
