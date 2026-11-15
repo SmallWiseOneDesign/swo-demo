@@ -10,6 +10,7 @@
   let lastY = window.scrollY;
   let applying = false;
   let following = false;
+  let suppressDirectionUntil = 0;
 
   function visualBottom(el) {
     const rect = el.getBoundingClientRect();
@@ -81,8 +82,12 @@
     const after = header.getBoundingClientRect().height;
     setStickyOffsets();
     const delta = after - before;
-    if (delta && stuck && y > 0) {
+    if (delta && stuck && y > 16) {
       window.scrollTo(0, y + delta);
+      // The compensated scroll would otherwise look like a direction
+      // change and immediately undo the expand or compact we just applied.
+      lastY = window.scrollY;
+      suppressDirectionUntil = performance.now() + 100;
     }
     followHeader();
   }
@@ -99,7 +104,8 @@
     // Infer direction from scroll position so inertial and direction-reversal
     // scrolls (especially touch) still update compact state when wheel/touch
     // direction was already consumed by an earlier scroll event.
-    const inferred = y > lastY + 1 ? 1 : y < lastY - 1 ? -1 : 0;
+    let inferred = y > lastY + 1 ? 1 : y < lastY - 1 ? -1 : 0;
+    if (performance.now() < suppressDirectionUntil) inferred = 0;
     lastY = y;
 
     document.body.classList.toggle('is-scrolled', y > 8);
@@ -108,9 +114,10 @@
       setCompact(false);
     } else if (inferred > 0) {
       setCompact(true);
-    } else if (inferred < 0) {
-      setCompact(false);
     } else {
+      // Stay compact mid-gallery on scroll-up. Re-expanding the logo
+      // there grows the sticky header over the submenu. The y < 16
+      // branch above restores the full header at the top of the page.
       followHeader();
     }
 
