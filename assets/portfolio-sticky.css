@@ -63,6 +63,19 @@ body.portfolio .collection {
   scroll-margin-top: calc(var(--portfolio-sticky-header) + var(--portfolio-sticky-submenu, 0px) + 16px);
 }
 
+/* The display "Portfolio" heading uses a tight line-height, so its glyphs
+   overflow the element box by about 9px. The 8px main padding left that ink
+   under the sticky header even at scrollY 0. */
+body.portfolio .portfolio-main {
+  padding-top: 24px;
+}
+
+@media (max-width: 700px) {
+  body.portfolio .portfolio-main {
+    padding-top: 20px;
+  }
+}
+
 @media (min-width: 701px) {
   /* Stretch the grid row to the collections column height so the submenu's
      containing block is taller than the menu itself. align-self: start keeps
