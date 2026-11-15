@@ -1,4 +1,4 @@
-/* Portfolio (issue #10 follow-up): compact header, sticky offsets, no expand overlap. */
+/* Portfolio (issue #10 follow-up): keep submenu top in sync with the live header height. */
 (() => {
   if (!document.body.classList.contains('portfolio')) return;
   const header = document.querySelector('.site-header');
@@ -7,22 +7,69 @@
 
   const root = document.documentElement;
   const mobileQuery = window.matchMedia('(max-width: 700px)');
-  let direction = 0;
+  let lastY = window.scrollY;
   let applying = false;
+  let following = false;
+  let suppressDirectionUntil = 0;
+
+  function visualBottom(el) {
+    const rect = el.getBoundingClientRect();
+    let bottom = rect.bottom;
+    const before = getComputedStyle(el, '::before');
+    if (before && before.content !== 'none' && before.position === 'absolute') {
+      const top = parseFloat(before.top);
+      const height = parseFloat(before.height);
+      const border = parseFloat(before.borderBottomWidth) || 0;
+      const extra = before.boxSizing === 'border-box' ? 0 : border;
+      if (!Number.isNaN(top) && !Number.isNaN(height)) {
+        bottom = Math.max(bottom, rect.top + top + height + extra);
+      }
+    }
+    return bottom;
+  }
+
+  function headerOffset() {
+    const rect = header.getBoundingClientRect();
+    const bottom = visualBottom(header);
+    // When the header is stuck at the top, follow its live visual bottom
+    // (including the full-bleed ::before border) so a compact/expand height
+    // change cannot leave the submenu tucked under it.
+    if (rect.top <= 1) return bottom;
+    return Math.max(rect.height, bottom - rect.top);
+  }
 
   function setStickyOffsets() {
-    const headerHeight = Math.round(header.getBoundingClientRect().height);
-    root.style.setProperty('--portfolio-sticky-header', `${headerHeight}px`);
+    root.style.setProperty('--portfolio-sticky-header', `${Math.ceil(headerOffset())}px`);
     const submenuHeight = (mobileQuery.matches && submenu)
-      ? Math.round(submenu.getBoundingClientRect().height)
+      ? Math.ceil(submenu.getBoundingClientRect().height)
       : 0;
     root.style.setProperty('--portfolio-sticky-submenu', `${submenuHeight}px`);
+  }
+
+  function followHeader() {
+    setStickyOffsets();
+    if (following) return;
+    following = true;
+    let last = headerOffset();
+    let stable = 0;
+    const step = () => {
+      setStickyOffsets();
+      const current = headerOffset();
+      if (Math.abs(current - last) < 0.5) stable += 1;
+      else {
+        stable = 0;
+        last = current;
+      }
+      if (stable < 3) requestAnimationFrame(step);
+      else following = false;
+    };
+    requestAnimationFrame(step);
   }
 
   function setCompact(compact) {
     const isCompact = document.body.classList.contains('is-compact-nav');
     if (compact === isCompact) {
-      setStickyOffsets();
+      followHeader();
       return;
     }
 
@@ -30,80 +77,67 @@
     const stuck = header.getBoundingClientRect().top <= 1;
     const y = window.scrollY;
     document.body.classList.toggle('is-compact-nav', compact);
+    // Read the new height and update the submenu offset before any scroll
+    // compensation, so the nav is never a frame behind the expanded header.
     const after = header.getBoundingClientRect().height;
-    const delta = after - before;
-    // When the sticky header changes height, compensate scroll so the content
-    // that was just below it is not covered by the expanded bar.
-    if (delta && stuck && y > 0) {
-      window.scrollTo(0, y + delta);
-    }
     setStickyOffsets();
+    const delta = after - before;
+    if (delta && stuck && y > 16) {
+      window.scrollTo(0, y + delta);
+      // The compensated scroll would otherwise look like a direction
+      // change and immediately undo the expand or compact we just applied.
+      lastY = window.scrollY;
+      suppressDirectionUntil = performance.now() + 100;
+    }
+    followHeader();
   }
 
   function apply() {
+    const y = window.scrollY;
     if (applying) {
-      setStickyOffsets();
+      lastY = y;
+      followHeader();
       return;
     }
     applying = true;
 
-    const y = window.scrollY;
+    // Infer direction from scroll position so inertial and direction-reversal
+    // scrolls (especially touch) still update compact state when wheel/touch
+    // direction was already consumed by an earlier scroll event.
+    let inferred = y > lastY + 1 ? 1 : y < lastY - 1 ? -1 : 0;
+    if (performance.now() < suppressDirectionUntil) inferred = 0;
+    lastY = y;
+
     document.body.classList.toggle('is-scrolled', y > 8);
 
     if (y < 16) {
       setCompact(false);
-    } else if (direction > 0) {
+    } else if (inferred > 0) {
       setCompact(true);
-    } else if (direction < 0) {
-      setCompact(false);
     } else {
-      setStickyOffsets();
+      // Stay compact mid-gallery on scroll-up. Re-expanding the logo
+      // there grows the sticky header over the submenu. The y < 16
+      // branch above restores the full header at the top of the page.
+      followHeader();
     }
 
-    direction = 0;
     applying = false;
   }
 
-  window.addEventListener('wheel', event => {
-    if (event.deltaY === 0) return;
-    direction = event.deltaY > 0 ? 1 : -1;
-  }, {passive: true});
-
-  window.addEventListener('keydown', event => {
-    const down = event.key === 'PageDown' || event.key === 'ArrowDown' || event.key === ' ' || event.key === 'End';
-    const up = event.key === 'PageUp' || event.key === 'ArrowUp' || event.key === 'Home';
-    if (down) direction = 1;
-    if (up) direction = -1;
-  });
-
-  let touchY = null;
-  window.addEventListener('touchstart', event => {
-    if (event.touches.length !== 1) return;
-    touchY = event.touches[0].clientY;
-  }, {passive: true});
-
-  window.addEventListener('touchmove', event => {
-    if (touchY == null || event.touches.length !== 1) return;
-    const y = event.touches[0].clientY;
-    if (Math.abs(y - touchY) < 8) return;
-    direction = y < touchY ? 1 : -1;
-    touchY = y;
-  }, {passive: true});
-
   window.addEventListener('scroll', apply, {passive: true});
-  window.addEventListener('resize', setStickyOffsets);
+  window.addEventListener('resize', followHeader);
   if (typeof mobileQuery.addEventListener === 'function') {
-    mobileQuery.addEventListener('change', setStickyOffsets);
+    mobileQuery.addEventListener('change', followHeader);
   } else if (typeof mobileQuery.addListener === 'function') {
-    mobileQuery.addListener(setStickyOffsets);
+    mobileQuery.addListener(followHeader);
   }
 
   if (typeof ResizeObserver === 'function') {
-    const observer = new ResizeObserver(setStickyOffsets);
+    const observer = new ResizeObserver(followHeader);
     observer.observe(header);
     if (submenu) observer.observe(submenu);
   }
 
   setStickyOffsets();
-  document.fonts && document.fonts.ready.then(setStickyOffsets);
+  document.fonts && document.fonts.ready.then(followHeader);
 })();
