@@ -114,9 +114,13 @@
 </div></section>
 </div></div></main>
 <dialog class="lightbox" aria-label="Artwork viewer" aria-describedby="lightbox-caption">
-<div class="lightbox-controls"><button type="button" class="lightbox-prev" aria-label="Previous artwork">← Previous</button><button type="button" class="lightbox-close" autofocus>Close ×</button><button type="button" class="lightbox-next" aria-label="Next artwork">Next →</button></div>
-<figure><img class="lightbox-image" alt=""><figcaption id="lightbox-caption" aria-live="polite"></figcaption></figure>
+<button type="button" class="lightbox-close" aria-label="Close" autofocus><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7.5 7.5l9 9M16.5 7.5l-9 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg></button>
+<figure>
+<div class="lightbox-stage"><button type="button" class="lightbox-prev" aria-label="Previous artwork"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button><img class="lightbox-image" alt=""><button type="button" class="lightbox-next" aria-label="Next artwork"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9.5 5.5L16 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div>
+<figcaption id="lightbox-caption" aria-live="polite"></figcaption>
+</figure>
 </dialog>
+<link rel="stylesheet" href="../assets/lightbox.css">
 <script src="../assets/lightbox.js" defer></script>
 </body>
 </html>
